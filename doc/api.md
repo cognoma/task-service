@@ -20,6 +20,8 @@ Workers can be any process that can communicate with an HTTP service. Typically,
 | default_timeout | integer | The default timeout for the task, in seconds. When a worker has stopped reporting on the task and the task has not completed or failed, the task is given to another worker. Default 600. | N |
 | max_attempts | integer | The maxium number of times a task can be attempted. Default 1. | N |
 | priority_levels | string array | The priority levels for this task. Default ["normal"] | N |
+| created_at | datetime | When the task def was created | Y |
+| updated_at | datetime | When the task def was last updated | Y |
 
 
 ### Task (/tasks)
@@ -42,6 +44,8 @@ Workers can be any process that can communicate with an HTTP service. Typically,
 | failed_at | datetime | When the task failed, this is also how a worker communicates failure. | N |
 | error_message | string | When failure has occured, a user friendly error message for display. | N |
 | attempts | integer | The number of times the task has been attempted so far. Used for retrying. Set by service. | Y |
+| created_at | datetime | When the task was created | Y |
+| updated_at | datetime | When the task was last updated | Y |
 
 #### Task Status (status)
  - pending_queue - "Pending Queue" - Usually only in this state for a short time, between saving the task to the DB and adding it to the queue. This helps with recovery when queue is down.
