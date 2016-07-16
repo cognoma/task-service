@@ -7,10 +7,10 @@ class TaskDef(models.Model):
     class Meta:
         db_table = "task_defs"
 
-    name = models.CharField(max_length=255) # ex "classifier_search"
+    name = models.CharField(max_length=255,unique=True) # ex "classifier_search"
     priority_levels = postgresfields.ArrayField(models.CharField(max_length=255))
-    title = models.CharField(max_length=255) # ex "Classifier Search"
-    description = models.CharField(max_length=2048) # optional description
+    title = models.CharField(max_length=255,blank=False) # ex "Classifier Search"
+    description = models.CharField(max_length=2048,blank=False) # optional description
     default_timeout = models.IntegerField(default=600) # default timeout, in seconds
     max_attempts = models.IntegerField(default=1) # max number of times this job can attempt to run
     created_at = models.DateTimeField(auto_now_add=True)
