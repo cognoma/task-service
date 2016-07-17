@@ -2,7 +2,6 @@ from rest_framework import serializers
 from api.models import TaskDef, Task, STATUS_CHOICES, PRIORITY_CHOICES
 
 class TaskDefSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(required=True, allow_blank=False, max_length=255)
     priority_levels = serializers.ListField(
         child=serializers.ChoiceField(choices=PRIORITY_CHOICES)
@@ -18,7 +17,7 @@ class TaskDefSerializer(serializers.Serializer):
         return TaskDef.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
+        instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.default_timeout = validated_data.get('default_timeout', instance.default_timeout)
         instance.max_attempts = validated_data.get('max_attempts', instance.max_attempts)
@@ -28,6 +27,7 @@ class TaskDefSerializer(serializers.Serializer):
 class TaskSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     task_def = serializers.PrimaryKeyRelatedField(required=True, queryset=TaskDef.objects.all())
+    message_id = serializers.CharField(read_only=True)
     lock_id = serializers.CharField(read_only=True)
     status = serializers.CharField(read_only=True)
     received_at = serializers.DateTimeField(read_only=True, format='iso-8601')

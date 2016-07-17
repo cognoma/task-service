@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils import timezone
+from django.core.validators import RegexValidator
 from django.contrib.postgres import fields as postgresfields
 
 STATUS_CHOICES = (
@@ -26,7 +27,16 @@ class TaskDef(models.Model):
     class Meta:
         db_table = "task_defs"
 
-    name = models.CharField(null=False, max_length=255, unique=True) # ex "classifier_search"
+    name = models.CharField( # ex "classifier_search"
+        primary_key=True,
+        max_length=255,
+        validators=[
+            RegexValidator(
+                regex='^[a-z0-9\-_]+$',
+                message='Task definition name can only contain lowercase alphanumeric charaters, dashes, and underscores.',
+            )
+        ]
+    )
     priority_levels = postgresfields.ArrayField(models.CharField(max_length=8, choices=PRIORITY_CHOICES))
     title = models.CharField(null=True, max_length=255, blank=False) # ex "Classifier Search"
     description = models.CharField(null=True, max_length=2048, blank=False) # optional description
@@ -39,7 +49,8 @@ class Task(models.Model):
     class Meta:
         db_table = "tasks"
 
-    task_def = models.ForeignKey(TaskDef)
+    task_def = models.ForeignKey(TaskDef, db_column="task_def_name")
+    message_id = models.CharField(null=True, max_length=255)
     lock_id = models.CharField(null=True, max_length=255) # message or lock id from queue
     status = models.CharField(choices=STATUS_CHOICES, max_length=17)
     received_at = models.DateTimeField(null=True)
