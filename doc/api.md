@@ -13,8 +13,7 @@ Workers can be any process that can communicate with an HTTP service. Typically,
 
 | Field        | Type           | Description | Read-Only
 | ------------- |:-------------:| ----------:| ----------:|
-| id | integer | Primary Key. Auto Incrementing. | Y |
-| name | string | The task's code friendly name. Ex classifier_search. Max 255.| N |
+| name | string | Primary Key. May only contain lowercase alphanumeric charaters, dashes, and underscores. Ex classifier_search. Max 255.| N |
 | title | string | The task's display friendly name. Ex "Classifier Search". Max 255. | N |
 | description | string | Text describing details of the task. Max 2048. | N |
 | default_timeout | integer | The default timeout for the task, in seconds. When a worker has stopped reporting on the task and the task has not completed or failed, the task is given to another worker. Default 600. | N |
@@ -29,8 +28,8 @@ Workers can be any process that can communicate with an HTTP service. Typically,
 | Field        | Type           | Description | Read-Only
 | ------------- |:-------------:| ----------:| ----------:|
 | id | integer | Primary Key. Auto Incrementing. | Y |
-| task\_def\_id | integer | Foreign Key referencing the task definition. | N |
-| task\_def\_name | string | Task definition's name. Included in rest response automatically. | Y |
+| task\_def | string | Foreign Key referencing the task definition. | N |
+| message_id | string | The message id from the message queue. | Y |
 | lock_id | string | The message receipt or other identifying handle from the queue. Set by service. | Y |
 | status | string | The status of the task. Enumeration, options below. Set by service. | Y |
 | received_at | datetime | The last time a worker was issued a task. Set by service. | Y |
@@ -81,7 +80,6 @@ POST Data
 Response
 
     {
-        id: 1,
         name: "classifier_search",
         priority_levels: ["normal"],
         title: "Classifier Search",
@@ -96,7 +94,7 @@ Response
 POST Data
 
     {
-        task_def_id: 1,
+        task_def: "classifier_search",
         unique: "cookie-user-32323-geneset-235",
         data: {
         	algorithm: "svm"
@@ -108,8 +106,7 @@ Response
 
     {
         id: 238,
-        task_def_id: 1,
-        task_def_name: "classifier_search",
+        task_def: "classifier_search",
         status: "queued",
         priority: "normal",
         unique: "cookie-user-32323-geneset-235",
@@ -135,8 +132,7 @@ Response
 
     {
         id: 238,
-        task_def_id: 1,
-        task_def_name: "classifier_search",
+        task_def: "classifier_search",
         lock_id: "j4qtjq43fu3utr034tu0t4t0uu0uja3ew",
         status: "in_progress",
         received_at: "2016-07-14T00:57:51+00:00",
@@ -158,8 +154,7 @@ Response
 
     {
         id: 238,
-        task_def_id: 1,
-        task_def_name: "classifier_search",
+        task_def: "classifier_search",
         lock_id: "j4qtjq43fu3utr034tu0t4t0uu0uja3ew",
         status: "in_progress",
         received_at: "2016-07-14T00:57:51+00:00",
@@ -181,8 +176,7 @@ Response
 
     [{
         id: 238,
-        task_def_id: 1,
-        task_def_name: "classifier_search",
+        task_def: "classifier_search",
         lock_id: "j4qtjq43fu3utr034tu0t4t0uu0uja3ew",
         status: "in_progress",
         received_at: "2016-07-14T00:57:51+00:00",
