@@ -1,69 +1,92 @@
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+import django_filters
+from rest_framework import filters
+from rest_framework import generics
 from api.models import TaskDef, Task
 from api.serializers import TaskDefSerializer, TaskSerializer
 
-@api_view(['GET', 'POST'])
-def task_def_list(request):
-    if request.method == 'GET':
-        task_defs = TaskDef.objects.all()
-        serializer = TaskDefSerializer(task_defs, many=True)
-        return Response(serializer.data)
+# TaskDef
 
-    elif request.method == 'POST':
-        serializer = TaskDefSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class TaskDefFilter(filters.FilterSet):
+    created_at__gte = django_filters.IsoDateTimeFilter(name='created_at', lookup_expr='gte')
+    created_at__lte = django_filters.IsoDateTimeFilter(name='created_at', lookup_expr='lte')
 
-@api_view(['GET', 'PUT'])
-def task_def_detail(request, id):
-    try:
-        task_def = TaskDef.objects.get(pk=pk)
-    except TaskDef.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    updated_at__gte = django_filters.IsoDateTimeFilter(name='updated_at', lookup_expr='gte')
+    updated_at__lte = django_filters.IsoDateTimeFilter(name='updated_at', lookup_expr='lte')
 
-    if request.method == 'GET':
-        serializer = TaskDefSerializer(task_def)
-        return Response(serializer.data)
+    class Meta:
+        model = TaskDef
+        fields = ['name', 'created_at', 'updated_at']
 
-    elif request.method == 'PUT':
-        serializer = TaskDefSerializer(task_def, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class TaskDefList(generics.ListCreateAPIView):
+    queryset = TaskDef.objects.all()
+    serializer_class = TaskDefSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = TaskDefFilter
+    ordering_fields = ('name','created_at','updated_at')
+    ordering = ('name',)
 
-@api_view(['GET', 'POST'])
-def task_list(request):
-    if request.method == 'GET':
-        tasks = Task.objects.all()
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data)
+class TaskDefRetrieveUpdate(generics.RetrieveUpdateAPIView):
+    queryset = TaskDef.objects.all()
+    serializer_class = TaskDefSerializer
+    lookup_field = 'name'
 
-    elif request.method == 'POST':
-        serializer = TaskSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# Task
 
-@api_view(['GET', 'PUT'])
-def task_detail(request, id):
-    try:
-        task = Task.objects.get(pk=pk)
-    except Task.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class TaskFilter(filters.FilterSet):
+    created_at__gte = django_filters.IsoDateTimeFilter(name='created_at', lookup_expr='gte')
+    created_at__lte = django_filters.IsoDateTimeFilter(name='created_at', lookup_expr='lte')
 
-    if request.method == 'GET':
-        serializer = TaskSerializer(task)
-        return Response(serializer.data)
+    updated_at__gte = django_filters.IsoDateTimeFilter(name='updated_at', lookup_expr='gte')
+    updated_at__lte = django_filters.IsoDateTimeFilter(name='updated_at', lookup_expr='lte')
 
-    elif request.method == 'PUT':
-        serializer = TaskSerializer(task, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    received_at__gte = django_filters.IsoDateTimeFilter(name='received_at', lookup_expr='gte')
+    received_at__lte = django_filters.IsoDateTimeFilter(name='received_at', lookup_expr='lte')
+
+    run_at__gte = django_filters.IsoDateTimeFilter(name='run_at', lookup_expr='gte')
+    run_at__lte = django_filters.IsoDateTimeFilter(name='run_at', lookup_expr='lte')
+
+    started_at__gte = django_filters.IsoDateTimeFilter(name='started_at', lookup_expr='gte')
+    started_at__lte = django_filters.IsoDateTimeFilter(name='started_at', lookup_expr='lte')
+
+    completed_at__gte = django_filters.IsoDateTimeFilter(name='completed_at', lookup_expr='gte')
+    completed_at__lte = django_filters.IsoDateTimeFilter(name='completed_at', lookup_expr='lte')
+
+    failed_at__gte = django_filters.IsoDateTimeFilter(name='failed_at', lookup_expr='gte')
+    failed_at__lte = django_filters.IsoDateTimeFilter(name='failed_at', lookup_expr='lte')
+
+    class Meta:
+        model = Task
+        fields = ['id',
+                  'task_def',
+                  'status',
+                  'received_at',
+                  'priority',
+                  'unique',
+                  'run_at',
+                  'started_at',
+                  'completed_at',
+                  'failed_at',
+                  'attempts',
+                  'created_at',
+                  'updated_at']
+
+class TaskList(generics.ListCreateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_class = TaskFilter
+    ordering_fields = ('name',
+                       'received_at',
+                       'run_at',
+                       'started_at',
+                       'completed_at',
+                       'failed_at',
+                       'attempts',
+                       'created_at',
+                       'updated_at')
+    ordering = ('id',)
+
+class TaskRetrieveUpdate(generics.RetrieveUpdateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    lookup_field = 'id'
