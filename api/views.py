@@ -59,6 +59,7 @@ class TaskFilter(filters.FilterSet):
         fields = ['id',
                   'task_def',
                   'status',
+                  'worker_id',
                   'received_at',
                   'priority',
                   'unique',
