@@ -1,5 +1,10 @@
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
+from django.db.utils import IntegrityError
 from api.models import TaskDef, Task, STATUS_CHOICES, PRIORITY_CHOICES
+
+class UniqueTaskConflict(exceptions.APIException):
+    status_code = 409
+    default_detail = 'Task `unique` field conflict'
 
 class TaskDefSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, allow_blank=False, max_length=255)
@@ -29,10 +34,11 @@ class TaskSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     task_def = serializers.PrimaryKeyRelatedField(required=True, queryset=TaskDef.objects.all())
     status = serializers.CharField(read_only=True)
-    worker_id = serializers.CharField(required=False, max_length=255)
+    worker_id = serializers.CharField(read_only=True, required=False, max_length=255)
     received_at = serializers.DateTimeField(read_only=True, format='iso-8601')
     priority = serializers.ChoiceField(required=False, choices=STATUS_CHOICES)
     unique = serializers.CharField(required=False, max_length=255)
+    run_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
     started_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
     completed_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
     failed_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
@@ -42,7 +48,10 @@ class TaskSerializer(serializers.Serializer):
     updated_at = serializers.DateTimeField(read_only=True, format='iso-8601')
 
     def create(self, validated_data):
-        return Task.objects.create(**validated_data)
+        try:
+            return Task.objects.create(**validated_data)
+        except IntegrityError:
+            raise UniqueTaskConflict()
 
     def update(self, instance, validated_data):
         instance.worker_id = validated_data.get('worker_id', instance.priority)

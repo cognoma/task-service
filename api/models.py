@@ -6,8 +6,6 @@ from django.core.validators import RegexValidator
 from django.contrib.postgres import fields as postgresfields
 
 STATUS_CHOICES = (
-    ("pending_queue", "Pending Queue"),
-    ("scheduled", "Scheduled"),
     ("queued", "Queued"),
     ("in_progress", "In Progress"),
     ("failed_retrying", "Failed - Retrying"),
@@ -50,12 +48,14 @@ class Task(models.Model):
         db_table = "tasks"
 
     task_def = models.ForeignKey(TaskDef, db_column="task_def_name")
-    status = models.CharField(choices=STATUS_CHOICES, max_length=17)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=17, default='queued')
     worker_id = models.CharField(null=True, max_length=255)
+    ## make dispatched_at?
     received_at = models.DateTimeField(null=True)
-    priority = models.CharField(choices=PRIORITY_CHOICES, max_length=8, default="normal")
+    ## add queued_at? redundent with created_at?
+    priority = models.CharField(choices=PRIORITY_CHOICES, max_length=8, default="normal") ## TODO: validate priority against task_def
     unique = models.CharField(null=True, max_length=255)
-    run_at = models.DateTimeField(default=timezone.now)
+    run_at = models.DateTimeField(default=lambda: timezone.now())
     started_at = models.DateTimeField(null=True)
     completed_at = models.DateTimeField(null=True)
     failed_at = models.DateTimeField(null=True)
