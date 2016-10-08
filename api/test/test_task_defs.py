@@ -61,7 +61,7 @@ class TaskDefTests(APITestCase):
 
         self.assertEqual(task_def_create_response.status_code, 201)
 
-        task_def_response = self.client.get('/task-defs/' + str(task_def_create_response.data['name']))
+        task_def_response = self.client.get('/task-defs/' + task_def_create_response.data['name'])
 
         self.assertEqual(task_def_response.status_code, 200)
         self.assertEqual(list(task_def_response.data.keys()), self.task_def_keys)

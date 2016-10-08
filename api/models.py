@@ -50,8 +50,7 @@ class Task(models.Model):
     task_def = models.ForeignKey(TaskDef, db_column="task_def_name")
     status = models.CharField(choices=STATUS_CHOICES, max_length=17, default='queued')
     worker_id = models.CharField(null=True, max_length=255)
-    ## make dispatched_at?
-    received_at = models.DateTimeField(null=True)
+    locked_at = models.DateTimeField(null=True)
     ## add queued_at? redundent with created_at?
     priority = models.CharField(choices=PRIORITY_CHOICES, max_length=8, default="normal") ## TODO: validate priority against task_def
     unique = models.CharField(null=True, max_length=255)

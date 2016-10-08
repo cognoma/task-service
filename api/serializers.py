@@ -1,6 +1,6 @@
 from rest_framework import serializers, exceptions
 from django.db.utils import IntegrityError
-from api.models import TaskDef, Task, STATUS_CHOICES, PRIORITY_CHOICES
+from api.models import TaskDef, Task, PRIORITY_CHOICES
 
 class UniqueTaskConflict(exceptions.APIException):
     status_code = 409
@@ -35,14 +35,14 @@ class TaskSerializer(serializers.Serializer):
     task_def = serializers.PrimaryKeyRelatedField(required=True, queryset=TaskDef.objects.all())
     status = serializers.CharField(read_only=True)
     worker_id = serializers.CharField(read_only=True, required=False, max_length=255)
-    received_at = serializers.DateTimeField(read_only=True, format='iso-8601')
-    priority = serializers.ChoiceField(required=False, choices=STATUS_CHOICES)
+    locked_at = serializers.DateTimeField(read_only=True, format='iso-8601')
+    priority = serializers.ChoiceField(required=False, choices=PRIORITY_CHOICES)
     unique = serializers.CharField(required=False, max_length=255)
     run_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
-    started_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
-    completed_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
-    failed_at = serializers.DateTimeField(required=False, format='iso-8601', input_formats=['iso-8601'])
-    data = serializers.JSONField(required=False)
+    started_at = serializers.DateTimeField(required=False, allow_null=True, format='iso-8601', input_formats=['iso-8601'])
+    completed_at = serializers.DateTimeField(required=False, allow_null=True, format='iso-8601', input_formats=['iso-8601'])
+    failed_at = serializers.DateTimeField(required=False, allow_null=True, format='iso-8601', input_formats=['iso-8601'])
+    data = serializers.JSONField(required=False, allow_null=True)
     attempts = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True, format='iso-8601')
     updated_at = serializers.DateTimeField(read_only=True, format='iso-8601')

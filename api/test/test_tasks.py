@@ -8,7 +8,7 @@ class TaskTests(APITestCase):
                  'task_def',
                  'status',
                  'worker_id',
-                 'received_at',
+                 'locked_at',
                  'priority',
                  'unique',
                  'run_at',
@@ -90,3 +90,65 @@ class TaskTests(APITestCase):
 
         self.assertEqual(response2.status_code, 409)
         self.assertEqual(response2.data['detail'], 'Task `unique` field conflict')
+
+    def test_update_task(self):
+        task_post_data = {
+            'task_def': self.task_def_name,
+            'unique': 'classifer-2343',
+            'data': {
+                'foo': 'bar'
+            }
+        }
+
+        create_response = self.client.post('/tasks', task_post_data, format='json')
+
+        self.assertEqual(create_response.status_code, 201)
+
+        update = create_response.data
+        update['priority'] = 'high'
+
+        update_response = self.client.put('/tasks/' + str(update['id']), update, format='json')
+
+        self.assertEqual(update_response.status_code, 200)
+        self.assertEqual(list(update_response.data.keys()), self.task_keys)
+        self.assertEqual(update_response.data['priority'], 'high')
+
+    def test_list_tasks(self):
+        task_post_data = {
+            'task_def': self.task_def_name,
+            'data': {
+                'foo': 'bar'
+            }
+        }
+
+        task_1_repsonse = self.client.post('/tasks', task_post_data, format='json')
+        task_2_response = self.client.post('/tasks', task_post_data, format='json')
+
+        list_response = self.client.get('/tasks')
+
+        self.assertEqual(list_response.status_code, 200)
+        self.assertEqual(list(list_response.data.keys()), ['count',
+                                                           'next',
+                                                           'previous',
+                                                           'results'])
+        self.assertEqual(len(list_response.data['results']), 2)
+        self.assertEqual(list(list_response.data['results'][0].keys()), self.task_keys)
+        self.assertEqual(list(list_response.data['results'][1].keys()), self.task_keys)
+
+    def test_get_task(self):
+        task_post_data = {
+            'task_def': self.task_def_name,
+            'unique': 'classifer-2343',
+            'data': {
+                'foo': 'bar'
+            }
+        }
+
+        task_create_response = self.client.post('/tasks', task_post_data, format='json')
+
+        self.assertEqual(task_create_response.status_code, 201)
+
+        task_response = self.client.get('/tasks/' + str(task_create_response.data['id']))
+
+        self.assertEqual(task_response.status_code, 200)
+        self.assertEqual(list(task_response.data.keys()), self.task_keys)

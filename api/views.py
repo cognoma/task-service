@@ -39,8 +39,8 @@ class TaskFilter(filters.FilterSet):
     updated_at__gte = django_filters.IsoDateTimeFilter(name='updated_at', lookup_expr='gte')
     updated_at__lte = django_filters.IsoDateTimeFilter(name='updated_at', lookup_expr='lte')
 
-    received_at__gte = django_filters.IsoDateTimeFilter(name='received_at', lookup_expr='gte')
-    received_at__lte = django_filters.IsoDateTimeFilter(name='received_at', lookup_expr='lte')
+    locked_at__gte = django_filters.IsoDateTimeFilter(name='locked_at', lookup_expr='gte')
+    locked_at__lte = django_filters.IsoDateTimeFilter(name='locked_at', lookup_expr='lte')
 
     run_at__gte = django_filters.IsoDateTimeFilter(name='run_at', lookup_expr='gte')
     run_at__lte = django_filters.IsoDateTimeFilter(name='run_at', lookup_expr='lte')
@@ -60,7 +60,7 @@ class TaskFilter(filters.FilterSet):
                   'task_def',
                   'status',
                   'worker_id',
-                  'received_at',
+                  'locked_at',
                   'priority',
                   'unique',
                   'run_at',
@@ -77,7 +77,7 @@ class TaskList(generics.ListCreateAPIView):
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = TaskFilter
     ordering_fields = ('name',
-                       'received_at',
+                       'locked_at',
                        'run_at',
                        'started_at',
                        'completed_at',
