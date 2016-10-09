@@ -6,5 +6,6 @@ urlpatterns = [
     url(r'^task-defs/?$', views.TaskDefList.as_view()),
     url(r'^task-defs/(?P<name>[a-z0-9\-_]+)$', views.TaskDefRetrieveUpdate.as_view()),
     url(r'^tasks/?$', views.TaskList.as_view()),
-    url(r'^tasks/(?P<id>[0-9]+)$', views.TaskRetrieveUpdate.as_view())
+    url(r'^tasks/(?P<id>[0-9]+)$', views.TaskRetrieveUpdate.as_view()),
+    url(r'^tasks/queue$', views.PullQueue.as_view())
 ]

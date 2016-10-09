@@ -3,23 +3,23 @@ from unittest.mock import patch
 
 from rest_framework.test import APITestCase, APIClient
 
-class TaskTests(APITestCase):
-    task_keys = ['id',
-                 'task_def',
-                 'status',
-                 'worker_id',
-                 'locked_at',
-                 'priority',
-                 'unique',
-                 'run_at',
-                 'started_at',
-                 'completed_at',
-                 'failed_at',
-                 'data',
-                 'attempts',
-                 'created_at',
-                 'updated_at']
+task_keys = ['id',
+             'task_def',
+             'status',
+             'worker_id',
+             'locked_at',
+             'priority',
+             'unique',
+             'run_at',
+             'started_at',
+             'completed_at',
+             'failed_at',
+             'data',
+             'attempts',
+             'created_at',
+             'updated_at']
 
+class TaskTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
@@ -46,7 +46,7 @@ class TaskTests(APITestCase):
         response = self.client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(list(response.data.keys()), self.task_keys)
+        self.assertEqual(list(response.data.keys()), task_keys)
         self.assertEqual(response.data['task_def'], self.task_def_name)
 
         ## test fields defaults
@@ -66,7 +66,7 @@ class TaskTests(APITestCase):
         response = self.client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(list(response.data.keys()), self.task_keys)
+        self.assertEqual(list(response.data.keys()), task_keys)
 
         self.assertEqual(response.data['unique'], 'classifer-2343')
 
@@ -82,7 +82,7 @@ class TaskTests(APITestCase):
         response1 = self.client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response1.status_code, 201)
-        self.assertEqual(list(response1.data.keys()), self.task_keys)
+        self.assertEqual(list(response1.data.keys()), task_keys)
 
         self.assertEqual(response1.data['unique'], 'classifer-2343')
 
@@ -110,7 +110,7 @@ class TaskTests(APITestCase):
         update_response = self.client.put('/tasks/' + str(update['id']), update, format='json')
 
         self.assertEqual(update_response.status_code, 200)
-        self.assertEqual(list(update_response.data.keys()), self.task_keys)
+        self.assertEqual(list(update_response.data.keys()), task_keys)
         self.assertEqual(update_response.data['priority'], 'high')
 
     def test_list_tasks(self):
@@ -132,8 +132,8 @@ class TaskTests(APITestCase):
                                                            'previous',
                                                            'results'])
         self.assertEqual(len(list_response.data['results']), 2)
-        self.assertEqual(list(list_response.data['results'][0].keys()), self.task_keys)
-        self.assertEqual(list(list_response.data['results'][1].keys()), self.task_keys)
+        self.assertEqual(list(list_response.data['results'][0].keys()), task_keys)
+        self.assertEqual(list(list_response.data['results'][1].keys()), task_keys)
 
     def test_get_task(self):
         task_post_data = {
@@ -151,4 +151,4 @@ class TaskTests(APITestCase):
         task_response = self.client.get('/tasks/' + str(task_create_response.data['id']))
 
         self.assertEqual(task_response.status_code, 200)
-        self.assertEqual(list(task_response.data.keys()), self.task_keys)
+        self.assertEqual(list(task_response.data.keys()), task_keys)

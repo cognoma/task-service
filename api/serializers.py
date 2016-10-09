@@ -6,6 +6,7 @@ class UniqueTaskConflict(exceptions.APIException):
     status_code = 409
     default_detail = 'Task `unique` field conflict'
 
+## TODO: fix API pk conflict repsonse
 class TaskDefSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, allow_blank=False, max_length=255)
     priority_levels = serializers.ListField(

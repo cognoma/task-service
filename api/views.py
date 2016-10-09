@@ -1,8 +1,13 @@
 import django_filters
 from rest_framework import filters
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import ParseError
+
 from api.models import TaskDef, Task
 from api.serializers import TaskDefSerializer, TaskSerializer
+from api import queue
 
 # TaskDef
 
@@ -91,3 +96,23 @@ class TaskRetrieveUpdate(generics.RetrieveUpdateAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     lookup_field = 'id'
+
+class PullQueue(APIView):
+    def get(self, request, format=None):
+        if 'tasks' not in request.query_params:
+            raise ParseError('`tasks` query parameter required')
+
+        if 'limit' in request.query_params:
+            limit = request.query_params['limit'] ## TODO: integer validation
+        else:
+            limit = 1
+
+        ## TODO: allow for comma separated task list?
+        raw_tasks = queue.get_tasks(request.query_params.getlist('tasks'), limit)
+
+        tasks = []
+        for task in raw_tasks:
+            serializer = TaskSerializer(task)
+            tasks.append(serializer.data)
+
+        return Response(tasks)
