@@ -21,9 +21,13 @@ task_keys = ['id',
 
 class TaskTests(APITestCase):
     def setUp(self):
-        self.client = APIClient()
+        client = APIClient()
 
-        task_def_response = self.client.post('/task-defs', {'name': 'classifier-search'}, format='json')
+        self.token = 'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzZXJ2aWNlIjoiY29yZSJ9.HHlbWMjo-Y__DGV0DAiCY7u85FuNtY8wpovcZ9ga-oCsLdM2H5iVSz1vKiWK8zxl7dSYltbnyTNMxXO2cDS81hr4ohycr7YYg5CaE5sA5id73ab5T145XEdF5X_HXoeczctGq7X3x9QYSn7O1fWJbPWcIrOCs6T2DrySsYgjgdAAnWnKedy_dYWJ0YtHY1bXH3Y7T126QqVlQ9ylHk6hmFMCtxMPbuAX4YBJsxwjWpMDpe13xbaU0Uqo5N47a2_vi0XzQ_tzH5esLeFDl236VqhHRTIRTKhPTtRbQmXXy1k-70AU1FJewVrQddxbzMXJLFclStIdG_vW1dWdqhh-hQ'
+
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        task_def_response = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
 
         self.assertEqual(task_def_response.status_code, 201)
 
@@ -43,7 +47,10 @@ class TaskTests(APITestCase):
             }
         }
 
-        response = self.client.post('/tasks', task_post_data, format='json')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        response = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(list(response.data.keys()), task_keys)
@@ -54,6 +61,8 @@ class TaskTests(APITestCase):
         self.assertEqual(response.data['priority'], 'normal')
         self.assertEqual(response.data['run_at'], test_datetime)
 
+    ## TODO: test creating a task auth
+
     def test_queue_with_unique(self):
         task_post_data = {
             'task_def': self.task_def_name,
@@ -63,7 +72,10 @@ class TaskTests(APITestCase):
             }
         }
 
-        response = self.client.post('/tasks', task_post_data, format='json')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        response = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(list(response.data.keys()), task_keys)
@@ -79,14 +91,17 @@ class TaskTests(APITestCase):
             }
         }
 
-        response1 = self.client.post('/tasks', task_post_data, format='json')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        response1 = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response1.status_code, 201)
         self.assertEqual(list(response1.data.keys()), task_keys)
 
         self.assertEqual(response1.data['unique'], 'classifer-2343')
 
-        response2 = self.client.post('/tasks', task_post_data, format='json')
+        response2 = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response2.status_code, 409)
         self.assertEqual(response2.data['detail'], 'Task `unique` field conflict')
@@ -100,18 +115,23 @@ class TaskTests(APITestCase):
             }
         }
 
-        create_response = self.client.post('/tasks', task_post_data, format='json')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        create_response = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(create_response.status_code, 201)
 
         update = create_response.data
         update['priority'] = 'high'
 
-        update_response = self.client.put('/tasks/' + str(update['id']), update, format='json')
+        update_response = client.put('/tasks/' + str(update['id']), update, format='json')
 
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(list(update_response.data.keys()), task_keys)
         self.assertEqual(update_response.data['priority'], 'high')
+
+    ## TODO: test updating a task auth
 
     def test_list_tasks(self):
         task_post_data = {
@@ -121,10 +141,15 @@ class TaskTests(APITestCase):
             }
         }
 
-        task_1_repsonse = self.client.post('/tasks', task_post_data, format='json')
-        task_2_response = self.client.post('/tasks', task_post_data, format='json')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
 
-        list_response = self.client.get('/tasks')
+        task_1_repsonse = client.post('/tasks', task_post_data, format='json')
+        task_2_response = client.post('/tasks', task_post_data, format='json')
+
+        client = APIClient() # clear token
+
+        list_response = client.get('/tasks')
 
         self.assertEqual(list_response.status_code, 200)
         self.assertEqual(list(list_response.data.keys()), ['count',
@@ -144,11 +169,16 @@ class TaskTests(APITestCase):
             }
         }
 
-        task_create_response = self.client.post('/tasks', task_post_data, format='json')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        task_create_response = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(task_create_response.status_code, 201)
 
-        task_response = self.client.get('/tasks/' + str(task_create_response.data['id']))
+        client = APIClient() # clear token
+
+        task_response = client.get('/tasks/' + str(task_create_response.data['id']))
 
         self.assertEqual(task_response.status_code, 200)
         self.assertEqual(list(task_response.data.keys()), task_keys)

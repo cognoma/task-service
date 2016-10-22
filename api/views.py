@@ -8,6 +8,7 @@ from rest_framework.exceptions import ParseError
 from api.models import TaskDef, Task
 from api.serializers import TaskDefSerializer, TaskSerializer
 from api import queue
+from api.auth import TaskServicePermission, QueuePullPermission
 
 # TaskDef
 
@@ -23,6 +24,7 @@ class TaskDefFilter(filters.FilterSet):
         fields = ['name', 'created_at', 'updated_at']
 
 class TaskDefList(generics.ListCreateAPIView):
+    permission_classes = (TaskServicePermission,)
     queryset = TaskDef.objects.all()
     serializer_class = TaskDefSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -31,6 +33,7 @@ class TaskDefList(generics.ListCreateAPIView):
     ordering = ('name',)
 
 class TaskDefRetrieveUpdate(generics.RetrieveUpdateAPIView):
+    permission_classes = (TaskServicePermission,)
     queryset = TaskDef.objects.all()
     serializer_class = TaskDefSerializer
     lookup_field = 'name'
@@ -77,6 +80,7 @@ class TaskFilter(filters.FilterSet):
                   'updated_at']
 
 class TaskList(generics.ListCreateAPIView):
+    permission_classes = (TaskServicePermission,)
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
@@ -93,11 +97,14 @@ class TaskList(generics.ListCreateAPIView):
     ordering = ('id',)
 
 class TaskRetrieveUpdate(generics.RetrieveUpdateAPIView):
+    permission_classes = (TaskServicePermission,)
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     lookup_field = 'id'
 
 class PullQueue(APIView):
+    permission_classes = (QueuePullPermission,)
+
     def get(self, request, format=None):
         if 'tasks' not in request.query_params:
             raise ParseError('`tasks` query parameter required')
@@ -118,13 +125,19 @@ class PullQueue(APIView):
         return Response(tasks)
 
 class TouchTask(APIView):
+    permission_classes = (TaskServicePermission,)
+
     def post(self, request, format=None):
         pass
 
 class ReleaseTask(APIView):
+    permission_classes = (TaskServicePermission,)
+
     def post(self, request, format=None):
         pass
 
 class DequeueTask(APIView): # TODO: interrupt?
+    permission_classes = (TaskServicePermission,)
+
     def post(self, request, format=None):
         pass

@@ -31,7 +31,10 @@ ALLOWED_HOSTS = []
 REST_FRAMEWORK = {
     'UNAUTHENTICATED_USER': None,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': 100,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'api.auth.CognomaAuthentication',
+    )
 }
 
 # Application definition
@@ -63,6 +66,20 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432')
     }
 }
+
+dev_pub_key = """
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5knVYXDKNZAZ36TAo2S2
+it2PkkzlulB8jlLXIo9fOd6NV/v1gp3AUb3yz8otAa9lV5DKQvGUhkVe3dhfHNPv
+nL1w+x/4evi6qXnvbuJ+vlNcaJrSWFAvx8CFSRfUMnyACT7WDwkJZFYYWzTTBhzZ
+fE9D4/DtyrHhZFiB8xjAUbVmBO6f7zwp41Ehr11s5SokweYytwQy38AFvwGUOM6P
+AeN+7bMBi4PfTr4Y4VN/93OBckj4Dfe6AEtq31Z5Urh/e/+zaixbsmenAR1hvC6Z
+34+qca3WMUIZjdeIny4XP0xhzbZNP66tNqUBkJg/fkhKVEeFMHaQ7giBTtqMnXPz
+6wIDAQAB
+-----END PUBLIC KEY-----
+"""
+# SECURITY WARNING: change this to the prod public key!!
+JWT_PUB_KEY = os.getenv('JWT_PUB_KEY', dev_pub_key)
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/

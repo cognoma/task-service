@@ -6,17 +6,17 @@ from api.models import TaskDef, Task
 get_task_sql = """
 WITH nextTasks as (
     SELECT id
-    FROM task_service.tasks
-    JOIN task_service.task_defs
-    ON task_service.tasks.task_def_name = task_service.task_defs.name
+    FROM tasks
+    JOIN task_defs
+    ON tasks.task_def_name = task_defs.name
     WHERE
        task_def_name = ANY(%s)
        AND run_at <= NOW()
        AND (status = 'queued' OR
            (status = 'in_progress' AND
-            (NOW() > (locked_at + INTERVAL '1 second' * task_service.task_defs.default_timeout))) OR
+            (NOW() > (locked_at + INTERVAL '1 second' * task_defs.default_timeout))) OR
            (status = 'failed_retrying' AND
-            attempts < task_service.task_defs.max_attempts))
+            attempts < task_defs.max_attempts))
     ORDER BY
         CASE WHEN priority = 'critical'
              THEN 1
@@ -31,14 +31,14 @@ WITH nextTasks as (
     LIMIT %s
     FOR UPDATE SKIP LOCKED
 )
-UPDATE task_service.tasks SET
+UPDATE tasks SET
     status = 'in_progress',
     locked_at = now(),
     started_at = now(),
     attempts = attempts + 1
 FROM nextTasks
-WHERE task_service.tasks.id = nextTasks.id
-RETURNING task_service.tasks.*;
+WHERE tasks.id = nextTasks.id
+RETURNING tasks.*;
 """
 ## TODO: only update attempts on fail?
 

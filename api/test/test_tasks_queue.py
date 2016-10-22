@@ -13,9 +13,13 @@ class TaskQueueTests(APITestCase):
 
         mocked_now.return_value = test_datetime
 
-        self.client = APIClient()
+        client = APIClient()
 
-        task_def_response = self.client.post('/task-defs', {'name': 'classifier-search'}, format='json')
+        self.token = 'JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzZXJ2aWNlIjoiY29yZSJ9.HHlbWMjo-Y__DGV0DAiCY7u85FuNtY8wpovcZ9ga-oCsLdM2H5iVSz1vKiWK8zxl7dSYltbnyTNMxXO2cDS81hr4ohycr7YYg5CaE5sA5id73ab5T145XEdF5X_HXoeczctGq7X3x9QYSn7O1fWJbPWcIrOCs6T2DrySsYgjgdAAnWnKedy_dYWJ0YtHY1bXH3Y7T126QqVlQ9ylHk6hmFMCtxMPbuAX4YBJsxwjWpMDpe13xbaU0Uqo5N47a2_vi0XzQ_tzH5esLeFDl236VqhHRTIRTKhPTtRbQmXXy1k-70AU1FJewVrQddxbzMXJLFclStIdG_vW1dWdqhh-hQ'
+
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        task_def_response = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
 
         self.assertEqual(task_def_response.status_code, 201)
 
@@ -25,9 +29,9 @@ class TaskQueueTests(APITestCase):
         self.task_number = 0
 
         for x in range(0,11):
-            self.schedule_task()
+            self.schedule_task(client)
 
-    def schedule_task(self):
+    def schedule_task(self, client):
         self.task_number += 1
         task_post_data = {
             'task_def': self.task_def_name,
@@ -37,12 +41,15 @@ class TaskQueueTests(APITestCase):
             }
         }
 
-        response = self.client.post('/tasks', task_post_data, format='json')
+        response = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
 
     def test_pull_from_queue(self):
-        response = self.client.get('/tasks/queue?tasks=' + self.task_def_name)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name)
 
         self.assertEqual(response.status_code, 200)
 
@@ -50,8 +57,13 @@ class TaskQueueTests(APITestCase):
 
         self.assertEqual(list(response.data[0].keys()), task_keys)
 
+    ### TODO: test pull task auth
+
     def test_pull_from_queue_with_limit(self):
-        response = self.client.get('/tasks/queue?tasks=' + self.task_def_name + '&limit=10')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&limit=10')
 
         self.assertEqual(response.status_code, 200)
 
