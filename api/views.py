@@ -116,3 +116,15 @@ class PullQueue(APIView):
             tasks.append(serializer.data)
 
         return Response(tasks)
+
+class TouchTask(APIView):
+    def post(self, request, format=None):
+        pass
+
+class ReleaseTask(APIView):
+    def post(self, request, format=None):
+        pass
+
+class DequeueTask(APIView): # TODO: interrupt?
+    def post(self, request, format=None):
+        pass

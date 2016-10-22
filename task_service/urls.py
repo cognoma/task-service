@@ -7,5 +7,8 @@ urlpatterns = [
     url(r'^task-defs/(?P<name>[a-z0-9\-_]+)$', views.TaskDefRetrieveUpdate.as_view()),
     url(r'^tasks/?$', views.TaskList.as_view()),
     url(r'^tasks/(?P<id>[0-9]+)$', views.TaskRetrieveUpdate.as_view()),
-    url(r'^tasks/queue$', views.PullQueue.as_view())
+    url(r'^tasks/queue$', views.PullQueue.as_view()),
+    url(r'^tasks/(?P<id>[0-9]+)/touch$', views.TouchTask.as_view()),
+    url(r'^tasks/(?P<id>[0-9]+)/release$', views.ReleaseTask.as_view()),
+    url(r'^tasks/(?P<id>[0-9]+)/dequeue$', views.DequeueTask.as_view())
 ]

@@ -59,3 +59,8 @@ class TaskQueueTests(APITestCase):
 
         for task in response.data:
             self.assertEqual(list(task.keys()), task_keys)
+
+    ## TODO: Mo tests
+    ##  - no `tasks` response
+    ##  - limit is not an integer between 1 and some max
+    ##  - priority / sorting
