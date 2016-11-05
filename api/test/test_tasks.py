@@ -61,7 +61,20 @@ class TaskTests(APITestCase):
         self.assertEqual(response.data['priority'], 'normal')
         self.assertEqual(response.data['run_at'], test_datetime)
 
-    ## TODO: test creating a task auth
+    def test_queueing_auth(self):
+        task_post_data = {
+            'task_def': self.task_def_name,
+            'data': {
+                'foo': 'bar'
+            }
+        }
+
+        client = APIClient()
+
+        response = client.post('/tasks', task_post_data, format='json')
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data, {'detail': 'Authentication credentials were not provided.'})
 
     def test_queue_with_unique(self):
         task_post_data = {
@@ -131,7 +144,31 @@ class TaskTests(APITestCase):
         self.assertEqual(list(update_response.data.keys()), task_keys)
         self.assertEqual(update_response.data['priority'], 'high')
 
-    ## TODO: test updating a task auth
+    def test_update_task_auth(self):
+        task_post_data = {
+            'task_def': self.task_def_name,
+            'unique': 'classifer-2343',
+            'data': {
+                'foo': 'bar'
+            }
+        }
+
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        create_response = client.post('/tasks', task_post_data, format='json')
+
+        self.assertEqual(create_response.status_code, 201)
+
+        client = APIClient() # clear token
+
+        update = create_response.data
+        update['priority'] = 'high'
+
+        update_response = client.put('/tasks/' + str(update['id']), update, format='json')
+
+        self.assertEqual(update_response.status_code, 401)
+        self.assertEqual(update_response.data, {'detail': 'Authentication credentials were not provided.'})
 
     def test_list_tasks(self):
         task_post_data = {

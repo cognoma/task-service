@@ -30,7 +30,13 @@ class TaskDefTests(APITestCase):
         self.assertEqual(response.data['priority_levels'], ['normal'])
         self.assertEqual(response.data['default_timeout'], 600)
 
-    ## TODO: test create auth
+    def test_create_task_def_auth(self):
+        client = APIClient()
+
+        response = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data, {'detail': 'Authentication credentials were not provided.'})
 
     def test_update_task_def(self):
         client = APIClient()
@@ -49,7 +55,23 @@ class TaskDefTests(APITestCase):
         self.assertEqual(update_response.data['title'], 'Classifier Search')
         self.assertEqual(list(update_response.data.keys()), self.task_def_keys)
 
-    ## TODO: test update auth
+    def test_update_task_def_auth(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        create_response = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
+
+        self.assertEqual(create_response.status_code, 201)
+
+        client = APIClient() # clear token
+
+        task_def = create_response.data
+        task_def['title'] = 'Classifier Search'
+
+        update_response = client.put('/task-defs/' + task_def['name'], task_def, format='json')
+
+        self.assertEqual(update_response.status_code, 401)
+        self.assertEqual(update_response.data, {'detail': 'Authentication credentials were not provided.'})
 
     def test_list_task_defs(self):
         client = APIClient()

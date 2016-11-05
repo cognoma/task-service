@@ -49,7 +49,7 @@ class TaskQueueTests(APITestCase):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=self.token)
 
-        response = client.get('/tasks/queue?tasks=' + self.task_def_name)
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
 
         self.assertEqual(response.status_code, 200)
 
@@ -57,13 +57,19 @@ class TaskQueueTests(APITestCase):
 
         self.assertEqual(list(response.data[0].keys()), task_keys)
 
-    ### TODO: test pull task auth
+    def test_pull_from_queue_auth(self):
+        client = APIClient()
+
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data, {'detail': 'Authentication credentials were not provided.'})
 
     def test_pull_from_queue_with_limit(self):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=self.token)
 
-        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&limit=10')
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo&limit=10')
 
         self.assertEqual(response.status_code, 200)
 
@@ -72,7 +78,4 @@ class TaskQueueTests(APITestCase):
         for task in response.data:
             self.assertEqual(list(task.keys()), task_keys)
 
-    ## TODO: Mo tests
-    ##  - no `tasks` response
-    ##  - limit is not an integer between 1 and some max
-    ##  - priority / sorting
+    ## TODO: test priority / sorting

@@ -26,7 +26,7 @@ SECRET_KEY = '8n(c=^76tgbrr6o&tshb)1n=e2uzb#q3ac#=jm(rf5m-7_6z0g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [os.getenv('DJANGO_HOST', '*')]
 
 REST_FRAMEWORK = {
     'UNAUTHENTICATED_USER': None,
@@ -62,6 +62,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME', 'postgres'),
         'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
         'HOST': os.getenv('DB_HOST', 'task_db'),
         'PORT': os.getenv('DB_PORT', '5432')
     }

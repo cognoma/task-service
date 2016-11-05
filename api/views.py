@@ -109,13 +109,24 @@ class PullQueue(APIView):
         if 'tasks' not in request.query_params:
             raise ParseError('`tasks` query parameter required')
 
+        if 'worker_id' not in request.query_params:
+            raise ParseError('`worker_id` query parameter required')
+
         if 'limit' in request.query_params:
-            limit = request.query_params['limit'] ## TODO: integer validation
+            try:
+                limit = int(request.query_params['limit'])
+            except ValueError:
+                raise ParseError('`limit` query parameter must be an integer')
         else:
             limit = 1
 
+        if limit < 1 or limit > 10:
+            raise ParseError('`limit` must be between 1 and 10')
+
         ## TODO: allow for comma separated task list?
-        raw_tasks = queue.get_tasks(request.query_params.getlist('tasks'), limit)
+        raw_tasks = queue.get_tasks(request.query_params.getlist('tasks'),
+                                    request.query_params['worker_id'],
+                                    limit)
 
         tasks = []
         for task in raw_tasks:

@@ -2,10 +2,9 @@ from django.db import connection
 
 from api.models import TaskDef, Task
 
-# join to task_defs for specific timeout and max_attempts?
 get_task_sql = """
 WITH nextTasks as (
-    SELECT id
+    SELECT id, status, started_at
     FROM tasks
     JOIN task_defs
     ON tasks.task_def_name = task_defs.name
@@ -33,14 +32,22 @@ WITH nextTasks as (
 )
 UPDATE tasks SET
     status = 'in_progress',
+    worker_id = %s,
     locked_at = now(),
-    started_at = now(),
-    attempts = attempts + 1
+    started_at =
+        CASE WHEN nextTasks.started_at = null
+             THEN now()
+             ELSE null
+        END,
+    attempts =
+        CASE WHEN nextTasks.status = 'in_progress'
+             THEN attempts
+             ELSE attempts + 1
+        END
 FROM nextTasks
 WHERE tasks.id = nextTasks.id
 RETURNING tasks.*;
 """
-## TODO: only update attempts on fail?
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -50,10 +57,9 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
-## TODO: set worker_id
-def get_tasks(task_names, limit=1):
+def get_tasks(task_names, worker_id, limit=1):
     with connection.cursor() as cursor:
-        cursor.execute(get_task_sql, [task_names, limit])
+        cursor.execute(get_task_sql, [task_names, limit, worker_id])
         raw_tasks = dictfetchall(cursor)
 
     for raw_task in raw_tasks:
