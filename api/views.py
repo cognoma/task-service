@@ -1,9 +1,11 @@
+import datetime
+
 import django_filters
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, NotFound
 
 from api.models import TaskDef, Task
 from api.serializers import TaskDefSerializer, TaskSerializer
@@ -138,17 +140,56 @@ class PullQueue(APIView):
 class TouchTask(APIView):
     permission_classes = (TaskServicePermission,)
 
-    def post(self, request, format=None):
-        pass
+    def post(self, request, id):
+        if 'timeout' in request.query_params:
+            try:
+                timeout = int(request.query_params['timeout'])
+            except ValueError:
+                raise ParseError('`timeout` query parameter must be an integer')
+        else:
+            timeout = 600
+
+        if timeout < 0 or timeout > 86400:
+            raise ParseError('`timeout` must be between 0 and 86,400 seconds (1 day)')
+
+        try:
+            task = Task.objects.get(id=id)
+        except Task.DoesNotExist:
+            raise NotFound('Task not found')
+
+        task.locked_at = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
+        task.save()
+
+        return Response(status=204)
 
 class ReleaseTask(APIView):
     permission_classes = (TaskServicePermission,)
 
-    def post(self, request, format=None):
-        pass
+    def post(self, request, id):
+        try:
+            task = Task.objects.get(id=id)
+        except Task.DoesNotExist:
+            raise NotFound('Task not found')
 
-class DequeueTask(APIView): # TODO: interrupt?
+        task.status = 'queued'
+        task.locked_at = None
+        task.worker_id = None
+        task.save()
+
+        return Response(status=204)
+
+class DequeueTask(APIView):
     permission_classes = (TaskServicePermission,)
 
-    def post(self, request, format=None):
-        pass
+    def post(self, request, id):
+        try:
+            task = Task.objects.get(id=id)
+        except Task.DoesNotExist:
+            raise NotFound('Task not found')
+
+        task.status = 'dequeued'
+        task.locked_at = None
+        task.worker_id = None
+        task.save()
+
+        return Response(status=204)

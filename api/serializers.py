@@ -6,7 +6,6 @@ class UniqueTaskConflict(exceptions.APIException):
     status_code = 409
     default_detail = 'Task `unique` field conflict'
 
-## TODO: fix API pk conflict repsonse
 class TaskDefSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, allow_blank=False, max_length=255)
     priority_levels = serializers.ListField(
@@ -21,7 +20,10 @@ class TaskDefSerializer(serializers.Serializer):
     updated_at = serializers.DateTimeField(read_only=True, format='iso-8601')
 
     def create(self, validated_data):
-        return TaskDef.objects.create(**validated_data)
+        try:
+            return TaskDef.objects.create(**validated_data)
+        except IntegrityError:
+            raise exceptions.ValidationError({'name': '"' + validated_data['name'] + '" already taken.'})
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
