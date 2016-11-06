@@ -2,7 +2,6 @@ from rest_framework.test import APITestCase, APIClient
 
 class TaskDefTests(APITestCase):
     task_def_keys = ['name',
-                     'priority_levels',
                      'title',
                      'description',
                      'default_timeout',
@@ -27,7 +26,6 @@ class TaskDefTests(APITestCase):
         self.assertEqual(response.data['title'], None)
         self.assertEqual(response.data['description'], None)
         self.assertEqual(response.data['max_attempts'], 1)
-        self.assertEqual(response.data['priority_levels'], ['normal'])
         self.assertEqual(response.data['default_timeout'], 600)
 
     def test_create_task_def_auth(self):

@@ -8,10 +8,6 @@ class UniqueTaskConflict(exceptions.APIException):
 
 class TaskDefSerializer(serializers.Serializer):
     name = serializers.CharField(required=True, allow_blank=False, max_length=255)
-    priority_levels = serializers.ListField(
-        child=serializers.ChoiceField(choices=PRIORITY_CHOICES),
-        required=False
-    )
     title = serializers.CharField(required=False, allow_null=True, allow_blank=False, max_length=255)
     description = serializers.CharField(required=False, allow_null=True, allow_blank=False, max_length=2048)
     default_timeout = serializers.IntegerField(required=False)

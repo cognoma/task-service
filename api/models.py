@@ -35,13 +35,20 @@ class TaskDef(models.Model):
             )
         ]
     )
-    priority_levels = postgresfields.ArrayField(models.CharField(max_length=8, choices=PRIORITY_CHOICES), default=['normal'])
     title = models.CharField(null=True, max_length=255, blank=False) # ex "Classifier Search"
     description = models.CharField(null=True, max_length=2048, blank=False) # optional description
     default_timeout = models.IntegerField(default=600) # default timeout, in seconds
     max_attempts = models.IntegerField(default=1) # max number of times this job can attempt to run
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+class ValidateTaskPriority(object):
+    def __init__(self, base):
+        self.base = base
+
+    def __call__(self, value):
+        print('in validator')
+        print(self)
 
 class Task(models.Model):
     class Meta:
@@ -51,7 +58,7 @@ class Task(models.Model):
     status = models.CharField(choices=STATUS_CHOICES, max_length=17, default='queued')
     worker_id = models.CharField(null=True, max_length=255)
     locked_at = models.DateTimeField(null=True)
-    priority = models.CharField(choices=PRIORITY_CHOICES, max_length=8, default="normal") ## TODO: validate priority against task_def
+    priority = models.CharField(choices=PRIORITY_CHOICES, max_length=8, default="normal")
     unique = models.CharField(null=True, max_length=255)
     run_at = models.DateTimeField(default=lambda: timezone.now())
     started_at = models.DateTimeField(null=True)
