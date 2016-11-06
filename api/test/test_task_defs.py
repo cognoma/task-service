@@ -1,5 +1,4 @@
 from rest_framework.test import APITestCase, APIClient
-from django.db import transaction
 
 class TaskDefTests(APITestCase):
     task_def_keys = ['name',
@@ -76,9 +75,10 @@ class TaskDefTests(APITestCase):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=self.token)
 
-        with transaction.atomic():
-            task_def_1_repsonse = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
-            task_def_2_response = client.post('/task-defs', {'name': 'cleanup-workers'}, format='json')
+        task_def_1_repsonse = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
+        print(task_def_1_repsonse.status_code)
+        print(task_def_1_repsonse.data)
+        task_def_2_response = client.post('/task-defs', {'name': 'cleanup-workers'}, format='json')
 
         client = APIClient() # clear token
 
