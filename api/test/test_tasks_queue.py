@@ -28,10 +28,10 @@ class TaskQueueTests(APITestCase):
 
         self.task_number = 0
 
-        for x in range(0,11):
+        for x in range(0,10):
             self.schedule_task(client)
 
-    def schedule_task(self, client):
+    def schedule_task(self, client, run_at=None, priority=None):
         self.task_number += 1
         task_post_data = {
             'task_def': self.task_def_name,
@@ -41,9 +41,17 @@ class TaskQueueTests(APITestCase):
             }
         }
 
+        if run_at != None:
+            task_post_data['run_at'] = run_at
+
+        if priority != None:
+            task_post_data['priority'] = priority
+
         response = client.post('/tasks', task_post_data, format='json')
 
         self.assertEqual(response.status_code, 201)
+
+        return response.data
 
     def test_pull_from_queue(self):
         client = APIClient()
@@ -78,4 +86,37 @@ class TaskQueueTests(APITestCase):
         for task in response.data:
             self.assertEqual(list(task.keys()), task_keys)
 
-    ## TODO: test priority / sorting
+    @patch('django.utils.timezone.now')
+    def test_pull_from_queue_order(self, mocked_now):
+        # now needs to be padded to account for API and db clocks not in perfect sync
+        test_datetime = (datetime.utcnow() - timedelta(0,3)).isoformat() + 'Z'
+
+        mocked_now.return_value = test_datetime
+
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        minus_10_min = (datetime.utcnow() - timedelta(0,600)).isoformat() + 'Z'
+
+        ## purposely not ordered by the actual expected by pull
+        task1 = self.schedule_task(client, run_at=minus_10_min)
+        task2 = self.schedule_task(client, priority='high')
+        task3 = self.schedule_task(client, priority='low')
+        task4 = self.schedule_task(client, run_at=minus_10_min, priority='high')
+
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+        self.assertEqual(task4['id'], response.data[0]['id'])
+
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+        self.assertEqual(task2['id'], response.data[0]['id'])
+
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+        self.assertEqual(task1['id'], response.data[0]['id'])
+
+        ## All the 'normal' priority tasks from setUp() should be here
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo&limit=10')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 10)
+
+        response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+        self.assertEqual(task3['id'], response.data[0]['id'])

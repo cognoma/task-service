@@ -33,10 +33,10 @@ WITH nextTasks as (
 UPDATE tasks SET
     status = 'in_progress',
     worker_id = %s,
-    locked_at = now(),
+    locked_at = NOW(),
     started_at =
         CASE WHEN nextTasks.started_at = null
-             THEN now()
+             THEN NOW()
              ELSE null
         END,
     attempts =
