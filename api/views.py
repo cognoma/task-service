@@ -125,7 +125,6 @@ class PullQueue(APIView):
         if limit < 1 or limit > 10:
             raise ParseError('`limit` must be between 1 and 10')
 
-        ## TODO: allow for comma separated task list?
         raw_tasks = queue.get_tasks(request.query_params.getlist('tasks'),
                                     request.query_params['worker_id'],
                                     limit)
