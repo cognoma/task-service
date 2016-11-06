@@ -75,10 +75,11 @@ class TaskDefTests(APITestCase):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=self.token)
 
-        task_def_1_repsonse = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
-        print(task_def_1_repsonse.status_code)
-        print(task_def_1_repsonse.data)
+        task_def_1_response = client.post('/task-defs', {'name': 'classifier-search'}, format='json')
+        self.assertEqual(task_def_1_response.status_code, 201)
+
         task_def_2_response = client.post('/task-defs', {'name': 'cleanup-workers'}, format='json')
+        self.assertEqual(task_def_2_response.status_code, 201)
 
         client = APIClient() # clear token
 
