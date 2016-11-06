@@ -65,6 +65,9 @@ class TaskQueueTests(APITestCase):
 
         self.assertEqual(list(response.data[0].keys()), task_keys)
 
+        self.assertEqual(response.data[0]['status'], 'in_progress')
+        self.assertEqual(response.data[0]['worker_id'], 'foo')
+
     def test_pull_from_queue_auth(self):
         client = APIClient()
 
@@ -120,3 +123,66 @@ class TaskQueueTests(APITestCase):
 
         response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
         self.assertEqual(task3['id'], response.data[0]['id'])
+
+    def test_touching_task(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        task_response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+        self.assertEqual(task_response.status_code, 200)
+        self.assertEqual(len(task_response.data), 1)
+
+        task = task_response.data[0]
+
+        touch_response = client.post('/tasks/' + str(task['id']) + '/touch?timeout=300')
+        self.assertEqual(touch_response.status_code, 204)
+
+        task_response = client.get('/tasks/' + str(task['id']))
+        self.assertEqual(task_response.status_code, 200)
+
+        # need to pad now() since datetime.now() can't be mocked :/
+        plus_5_min_from_now = datetime.now() + timedelta(seconds=300)
+        plus_5_min_from_now_left_pad = (plus_5_min_from_now - timedelta(seconds=3)).isoformat() + 'Z'
+        plus_5_min_from_now_right_pad = (plus_5_min_from_now + timedelta(seconds=3)).isoformat() + 'Z'
+
+        self.assertTrue(plus_5_min_from_now_left_pad <= task_response.data['locked_at'] <= plus_5_min_from_now_right_pad)
+
+    def test_release_task(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        task_response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+        self.assertEqual(task_response.status_code, 200)
+        self.assertEqual(len(task_response.data), 1)
+
+        task = task_response.data[0]
+
+        self.assertEqual(task['status'], 'in_progress')
+
+        release_response = client.post('/tasks/' + str(task['id']) + '/release')
+        self.assertEqual(release_response.status_code, 204)
+
+        task_response = client.get('/tasks/' + str(task['id']))
+        self.assertEqual(task_response.status_code, 200)
+
+        self.assertEqual(task_response.data['status'], 'queued')
+
+    def test_dequeue_task(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        task_response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
+        self.assertEqual(task_response.status_code, 200)
+        self.assertEqual(len(task_response.data), 1)
+
+        task = task_response.data[0]
+
+        self.assertEqual(task['status'], 'in_progress')
+
+        dequeue_response = client.post('/tasks/' + str(task['id']) + '/dequeue')
+        self.assertEqual(dequeue_response.status_code, 204)
+
+        task_response = client.get('/tasks/' + str(task['id']))
+        self.assertEqual(task_response.status_code, 200)
+
+        self.assertEqual(task_response.data['status'], 'dequeued')

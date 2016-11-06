@@ -156,7 +156,7 @@ class TouchTask(APIView):
         except Task.DoesNotExist:
             raise NotFound('Task not found')
 
-        task.locked_at = datetime.datetime.now() + datetime.timedelta(seconds=timeout)
+        task.locked_at = (datetime.datetime.now() + datetime.timedelta(seconds=timeout)).isoformat() + 'Z'
         task.save()
 
         return Response(status=204)
