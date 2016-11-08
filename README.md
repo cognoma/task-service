@@ -9,33 +9,26 @@ Make sure to fork [this repository on
  +GitHub") first.
 
 ### Prerequisites
-- Python 3 - tested with Python 3.5.1
-- virtualenv - tested on 15.0.2
-- Postgres 9.5.x - tested on Postgres 9.5.2
+
+- Docker - tested with 1.12.1
+- Docker Compose - tested with 1.8.0
 
 ### Setup Postgres
 
 ```sh
-CREATE USER app WITH PASSWORD 'password';
-CREATE DATABASE cognoma;
-CREATE SCHEMA task_service;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA task_service TO app;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA task_service TO app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA task_service GRANT ALL PRIVILEGES ON TABLES TO app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA task_service GRANT ALL PRIVILEGES ON SEQUENCES TO app;
+docker-compose up
 ```
 
-### Setup up the API
+Sometimes the postgres image takes a while to load on first run and the Django server starts up first. If this happens just ctrl+C and rerun `docker-compose up`
+
+The code in the repository is also mounted as a volume in the task-service container. This means you can edit code on your host machine, using your favorite editor, and the django server will automatically restart to reflect the code changes.
+
+The server should start up at http://localhost:8080/, see the [API docs](https://github.com/cognoma/task-service/blob/master/doc/api.md).
+
+## Running tests locally
+
+Make sure the service is up first using `docker-compose up` then run:
 
 ```sh
-USERNAME=your_github_handle # Change to your GitHub Handle
-git clone git@github.com:${USERNAME}/task-service.git
-cd task-service
-virtualenv --python=python3 env
-source env/bin/activate
-pip install --requirement requirements.txt
-python manage.py migrate
-python manage.py runserver
+docker-compose exec task python manage.py test
 ```
-
-The server should start up at http://127.0.0.1:8000/, see the [API docs](https://github.com/cognoma/task-service/blob/master/doc/api.md).
