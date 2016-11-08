@@ -19,7 +19,7 @@ class TaskDefSerializer(serializers.Serializer):
         try:
             return TaskDef.objects.create(**validated_data)
         except IntegrityError:
-            raise exceptions.ValidationError({'name': '"' + validated_data['name'] + '" already taken.'})
+            raise exceptions.ValidationError({'name': '"{name}" already taken.'.format(**validated_data)})
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)

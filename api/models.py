@@ -42,14 +42,6 @@ class TaskDef(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class ValidateTaskPriority(object):
-    def __init__(self, base):
-        self.base = base
-
-    def __call__(self, value):
-        print('in validator')
-        print(self)
-
 class Task(models.Model):
     class Meta:
         db_table = "tasks"

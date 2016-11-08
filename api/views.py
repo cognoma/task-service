@@ -148,7 +148,7 @@ class TouchTask(APIView):
         else:
             timeout = 600
 
-        if timeout < 0 or timeout > 86400:
+        if not 0 < timeout < 86400:
             raise ParseError('`timeout` must be between 0 and 86,400 seconds (1 day)')
 
         try:

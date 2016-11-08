@@ -28,7 +28,7 @@ class TaskQueueTests(APITestCase):
 
         self.task_number = 0
 
-        for x in range(0,10):
+        for x in range(10):
             self.schedule_task(client)
 
     def schedule_task(self, client, run_at=None, priority=None):
