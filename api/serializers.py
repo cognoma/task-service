@@ -53,11 +53,24 @@ class TaskSerializer(serializers.Serializer):
             raise UniqueTaskConflict()
 
     def update(self, instance, validated_data):
+        failed_at = validated_data.get('failed_at', None)
+        completed_at = validated_data.get('completed_at', None)
+        
+        if failed_at == None and completed_at != None:
+            instance.status = 'complete'
+        elif failed_at != None and completed_at == None:
+            if instance.attempts >= instance.task_def.max_attempts:
+                instance.status = 'failed'
+            else:
+                instance.status = 'failed_retrying'
+        elif failed_at != None and completed_at != None:
+            raise exceptions.ValidationError('`failed_at` and `completed_at` cannot be both non-null at the same time.')
+
         instance.worker_id = validated_data.get('worker_id', instance.priority)
         instance.priority = validated_data.get('priority', instance.priority)
         instance.started_at = validated_data.get('started_at', instance.started_at)
-        instance.completed_at = validated_data.get('completed_at', instance.completed_at)
-        instance.failed_at = validated_data.get('failed_at', instance.failed_at)
+        instance.completed_at = completed_at
+        instance.failed_at = failed_at
         instance.data = validated_data.get('data', instance.data)
         instance.save()
         return instance
