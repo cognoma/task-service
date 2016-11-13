@@ -19,16 +19,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
+# The warning below is usually correct, but we do not use this secret key in this project
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '8n(c=^76tgbrr6o&tshb)1n=e2uzb#q3ac#=jm(rf5m-7_6z0g'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [os.getenv('DJANGO_HOST', '*')]
 
 REST_FRAMEWORK = {
     'UNAUTHENTICATED_USER': None,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'api.auth.CognomaAuthentication',
+    )
 }
 
 # Application definition
@@ -54,17 +60,27 @@ WSGI_APPLICATION = 'task_service.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cognoma',
-        'USER': 'app',
-        'PASSWORD': 'password',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'OPTIONS': {
-            'options': '-c search_path=task_service'
-        }
+        'NAME': os.getenv('DB_NAME', 'postgres'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
+        'HOST': os.getenv('DB_HOST', 'task_db'),
+        'PORT': os.getenv('DB_PORT', '5432')
     }
 }
 
+dev_pub_key = """
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5knVYXDKNZAZ36TAo2S2
+it2PkkzlulB8jlLXIo9fOd6NV/v1gp3AUb3yz8otAa9lV5DKQvGUhkVe3dhfHNPv
+nL1w+x/4evi6qXnvbuJ+vlNcaJrSWFAvx8CFSRfUMnyACT7WDwkJZFYYWzTTBhzZ
+fE9D4/DtyrHhZFiB8xjAUbVmBO6f7zwp41Ehr11s5SokweYytwQy38AFvwGUOM6P
+AeN+7bMBi4PfTr4Y4VN/93OBckj4Dfe6AEtq31Z5Urh/e/+zaixbsmenAR1hvC6Z
+34+qca3WMUIZjdeIny4XP0xhzbZNP66tNqUBkJg/fkhKVEeFMHaQ7giBTtqMnXPz
+6wIDAQAB
+-----END PUBLIC KEY-----
+"""
+# SECURITY WARNING: change this to the prod public key!!
+JWT_PUB_KEY = os.getenv('JWT_PUB_KEY', dev_pub_key)
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/

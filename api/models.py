@@ -6,8 +6,6 @@ from django.core.validators import RegexValidator
 from django.contrib.postgres import fields as postgresfields
 
 STATUS_CHOICES = (
-    ("pending_queue", "Pending Queue"),
-    ("scheduled", "Scheduled"),
     ("queued", "Queued"),
     ("in_progress", "In Progress"),
     ("failed_retrying", "Failed - Retrying"),
@@ -37,7 +35,6 @@ class TaskDef(models.Model):
             )
         ]
     )
-    priority_levels = postgresfields.ArrayField(models.CharField(max_length=8, choices=PRIORITY_CHOICES))
     title = models.CharField(null=True, max_length=255, blank=False) # ex "Classifier Search"
     description = models.CharField(null=True, max_length=2048, blank=False) # optional description
     default_timeout = models.IntegerField(default=600) # default timeout, in seconds
@@ -50,15 +47,12 @@ class Task(models.Model):
         db_table = "tasks"
 
     task_def = models.ForeignKey(TaskDef, db_column="task_def_name")
-    message_id = models.CharField(null=True, max_length=255)
-    lock_id = models.CharField(null=True, max_length=255) # message or lock id from queue
-    status = models.CharField(choices=STATUS_CHOICES, max_length=17)
-    received_at = models.DateTimeField(null=True)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=17, default='queued')
+    worker_id = models.CharField(null=True, max_length=255)
+    locked_at = models.DateTimeField(null=True)
     priority = models.CharField(choices=PRIORITY_CHOICES, max_length=8, default="normal")
     unique = models.CharField(null=True, max_length=255)
-    run_at = models.DateTimeField(default=timezone.now)
-    run_every = models.CharField(null=True, max_length=255) # cron string for recurring jobs
-    recurring_run_enabled = models.NullBooleanField()
+    run_at = models.DateTimeField(default=lambda: timezone.now())
     started_at = models.DateTimeField(null=True)
     completed_at = models.DateTimeField(null=True)
     failed_at = models.DateTimeField(null=True)

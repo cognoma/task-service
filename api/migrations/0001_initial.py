@@ -65,5 +65,5 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(db_column='task_def_name', on_delete=django.db.models.deletion.CASCADE, to='api.TaskDef'),
         ),
         # add conditionally unique constraint on tasks.unique - not currently available within django framework
-        migrations.RunSQL("CREATE UNIQUE INDEX \"unique_task\" ON \"task_service\".\"tasks\" (\"task_def_name\", \"unique\") WHERE (\"status\" NOT IN ('dequeued','failed','completed'));")
+        migrations.RunSQL("CREATE UNIQUE INDEX \"unique_task\" ON \"tasks\" (\"task_def_name\", \"unique\") WHERE (\"status\" NOT IN ('dequeued','failed','completed'));")
     ]
