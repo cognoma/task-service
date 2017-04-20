@@ -23,7 +23,7 @@ Sometimes the postgres image takes a while to load on first run and the Django s
 
 The code in the repository is also mounted as a volume in the task-service container. This means you can edit code on your host machine, using your favorite editor, and the django server will automatically restart to reflect the code changes.
 
-The server should start up at http://localhost:8080/, see the [API docs](https://github.com/cognoma/task-service/blob/master/doc/api.md).
+The server should start up at http://localhost:8001/, see the [API docs](https://github.com/cognoma/task-service/blob/master/doc/api.md).
 
 ## Running tests locally
 
