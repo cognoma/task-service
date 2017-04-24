@@ -40,6 +40,7 @@ REST_FRAMEWORK = {
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.staticfiles',
     'django.contrib.contenttypes',
     'django.contrib.postgres',
     'rest_framework',
@@ -53,6 +54,8 @@ ROOT_URLCONF = 'task_service.urls'
 
 WSGI_APPLICATION = 'task_service.wsgi.application'
 
+# development
+STATIC_URL = '/static/'
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
