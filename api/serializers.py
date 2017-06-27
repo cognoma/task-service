@@ -56,14 +56,14 @@ class TaskSerializer(serializers.Serializer):
         failed_at = validated_data.get('failed_at', None)
         completed_at = validated_data.get('completed_at', None)
         
-        if failed_at == None and completed_at != None:
+        if failed_at is None and completed_at is not None:
             instance.status = 'complete'
-        elif failed_at != None and completed_at == None:
+        elif failed_at is not None and completed_at is None:
             if instance.attempts >= instance.task_def.max_attempts:
                 instance.status = 'failed'
             else:
                 instance.status = 'failed_retrying'
-        elif failed_at != None and completed_at != None:
+        elif failed_at is not None and completed_at is not None:
             raise exceptions.ValidationError('`failed_at` and `completed_at` cannot be both non-null at the same time.')
 
         instance.worker_id = validated_data.get('worker_id', instance.priority)

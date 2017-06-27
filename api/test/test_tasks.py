@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from unittest.mock import patch
 
 from rest_framework.test import APITestCase, APIClient
@@ -37,7 +37,6 @@ class TaskTests(APITestCase):
     @patch('django.utils.timezone.now')
     def test_queueing(self, mocked_now):
         test_datetime = datetime.utcnow().isoformat() + 'Z'
-
         mocked_now.return_value = test_datetime
 
         task_post_data = {
@@ -58,7 +57,7 @@ class TaskTests(APITestCase):
 
         ## test fields defaults
         self.assertEqual(response.data['status'], 'queued')
-        self.assertEqual(response.data['priority'], 'normal')
+        self.assertEqual(response.data['priority'], 3)
         self.assertEqual(response.data['run_at'], test_datetime)
 
     def test_queueing_auth(self):
@@ -136,13 +135,13 @@ class TaskTests(APITestCase):
         self.assertEqual(create_response.status_code, 201)
 
         update = create_response.data
-        update['priority'] = 'high'
+        update['priority'] = 2
 
         update_response = client.put('/tasks/' + str(update['id']), update, format='json')
 
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(list(update_response.data.keys()), task_keys)
-        self.assertEqual(update_response.data['priority'], 'high')
+        self.assertEqual(update_response.data['priority'], 2)
 
     def test_update_task_auth(self):
         task_post_data = {
@@ -163,7 +162,7 @@ class TaskTests(APITestCase):
         client = APIClient() # clear token
 
         update = create_response.data
-        update['priority'] = 'high'
+        update['priority'] = 2
 
         update_response = client.put('/tasks/' + str(update['id']), update, format='json')
 

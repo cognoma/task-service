@@ -15,10 +15,10 @@ STATUS_CHOICES = (
 )
 
 PRIORITY_CHOICES = (
-    ("critical", "Critical"),
-    ("high", "High"),
-    ("normal", "Normal"),
-    ("low", "Low")
+    (1, "Critical"),
+    (2, "High"),
+    (3, "Normal"),
+    (4, "Low")
 )
 
 class TaskDef(models.Model):
@@ -50,7 +50,7 @@ class Task(models.Model):
     status = models.CharField(choices=STATUS_CHOICES, max_length=17, default='queued')
     worker_id = models.CharField(null=True, max_length=255)
     locked_at = models.DateTimeField(null=True)
-    priority = models.CharField(choices=PRIORITY_CHOICES, max_length=8, default="normal")
+    priority = models.PositiveSmallIntegerField(choices=PRIORITY_CHOICES, default=3)
     unique = models.CharField(null=True, max_length=255)
     run_at = models.DateTimeField(default=lambda: timezone.now())
     started_at = models.DateTimeField(null=True)

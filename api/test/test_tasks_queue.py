@@ -9,7 +9,7 @@ class TaskQueueTests(APITestCase):
     @patch('django.utils.timezone.now')
     def setUp(self, mocked_now):
         # now needs to be padded to account for API and db clocks not in perfect sync
-        test_datetime = (datetime.utcnow() - timedelta(0,3)).isoformat() + 'Z'
+        test_datetime = (datetime.utcnow() - timedelta(0, 3)).isoformat() + 'Z'
 
         mocked_now.return_value = test_datetime
 
@@ -41,10 +41,10 @@ class TaskQueueTests(APITestCase):
             }
         }
 
-        if run_at != None:
+        if run_at is not None:
             task_post_data['run_at'] = run_at
 
-        if priority != None:
+        if priority is not None:
             task_post_data['priority'] = priority
 
         response = client.post('/tasks', task_post_data, format='json')
@@ -103,9 +103,9 @@ class TaskQueueTests(APITestCase):
 
         ## purposely not ordered by the actual expected by pull
         task1 = self.schedule_task(client, run_at=minus_10_min)
-        task2 = self.schedule_task(client, priority='high')
-        task3 = self.schedule_task(client, priority='low')
-        task4 = self.schedule_task(client, run_at=minus_10_min, priority='high')
+        task2 = self.schedule_task(client, priority=2)
+        task3 = self.schedule_task(client, priority=4)
+        task4 = self.schedule_task(client, run_at=minus_10_min, priority=2)
 
         response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
         self.assertEqual(task4['id'], response.data[0]['id'])

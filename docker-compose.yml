@@ -4,7 +4,7 @@ services:
     image: postgres
   task:
     build: .
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8001"
+    command: bash -c "sleep 5 && python manage.py migrate -v3 --no-input && python manage.py runserver 0.0.0.0:8001"
     volumes:
       - .:/code
     ports:
