@@ -236,9 +236,10 @@ class TaskTests(APITestCase):
         self.assertEqual(list(task_response.data.keys()), task_keys)
 
     def test_create_nonexistent_task_def(self):
+        task_def_name = 'nonexistent-task-def'
         task_post_data = {
             'task_def': {
-                'name': 'nonexistent-task-def'
+                'name': task_def_name
             },
             'unique': 'classifer-2343',
             'data': {
@@ -252,3 +253,4 @@ class TaskTests(APITestCase):
         task_create_response = client.post('/tasks/', task_post_data, format='json')
 
         self.assertEqual(task_create_response.status_code, 201)
+        self.assertEqual(task_create_response.data['task_def']['name'], task_def_name)
