@@ -208,7 +208,7 @@ class TaskTests(APITestCase):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION=self.token)
 
-        task_create_response = client.post('/tasks', task_post_data, format='json')
+        task_create_response = client.post('/tasks/', task_post_data, format='json')
 
         self.assertEqual(task_create_response.status_code, 201)
 
