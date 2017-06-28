@@ -31,7 +31,7 @@ class TaskDef(models.Model):
         validators=[
             RegexValidator(
                 regex='^[a-z0-9\-_]+$',
-                message='Task definition name can only contain lowercase alphanumeric charaters, dashes, and underscores.',
+                message='Task definition name can only contain lowercase alphanumeric characters, dashes, and underscores.',
             )
         ]
     )

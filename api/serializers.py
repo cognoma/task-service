@@ -48,7 +48,10 @@ class TaskSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         try:
-            return Task.objects.create(**validated_data)
+            # task creation request specifies name of a task-def.
+            # get_or_create guarantees that a task-def of that name will exist before the task is created
+            task_def, created = TaskDef.objects.get_or_create(name=validated_data.pop('task_def').name)
+            return Task.objects.create(task_def=task_def, **validated_data)
         except IntegrityError:
             raise UniqueTaskConflict()
 
