@@ -34,7 +34,9 @@ class TaskQueueTests(APITestCase):
     def schedule_task(self, client, run_at=None, priority=None):
         self.task_number += 1
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'unique': 'classifier-' + str(self.task_number),
             'data': {
                 'foo': 'bar'

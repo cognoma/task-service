@@ -32,6 +32,7 @@ class TaskDefSerializer(serializers.Serializer):
 class TaskSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     task_def = serializers.PrimaryKeyRelatedField(required=True, queryset=TaskDef.objects.all())
+    task_def = TaskDefSerializer()
     status = serializers.CharField(read_only=True)
     worker_id = serializers.CharField(read_only=True, required=False, max_length=255)
     locked_at = serializers.DateTimeField(read_only=True, format='iso-8601')
@@ -50,7 +51,7 @@ class TaskSerializer(serializers.Serializer):
         try:
             # task creation request specifies name of a task-def.
             # get_or_create guarantees that a task-def of that name will exist before the task is created
-            task_def, created = TaskDef.objects.get_or_create(name=validated_data.pop('task_def').name)
+            task_def, created = TaskDef.objects.get_or_create(**validated_data.pop('task_def'))
             return Task.objects.create(task_def=task_def, **validated_data)
         except IntegrityError:
             raise UniqueTaskConflict()

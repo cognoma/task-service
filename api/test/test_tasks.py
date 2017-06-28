@@ -40,7 +40,9 @@ class TaskTests(APITestCase):
         mocked_now.return_value = test_datetime
 
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'data': {
                 'foo': 'bar'
             }
@@ -53,7 +55,7 @@ class TaskTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(list(response.data.keys()), task_keys)
-        self.assertEqual(response.data['task_def'], self.task_def_name)
+        self.assertEqual(response.data['task_def']['name'], self.task_def_name)
 
         ## test fields defaults
         self.assertEqual(response.data['status'], 'queued')
@@ -62,7 +64,9 @@ class TaskTests(APITestCase):
 
     def test_queueing_auth(self):
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'data': {
                 'foo': 'bar'
             }
@@ -77,7 +81,9 @@ class TaskTests(APITestCase):
 
     def test_queue_with_unique(self):
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'unique': 'classifer-2343',
             'data': {
                 'foo': 'bar'
@@ -96,7 +102,9 @@ class TaskTests(APITestCase):
 
     def test_queue_with_unique_conflict(self):
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'unique': 'classifer-2343',
             'data': {
                 'foo': 'bar'
@@ -120,7 +128,9 @@ class TaskTests(APITestCase):
 
     def test_update_task(self):
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'unique': 'classifer-2343',
             'data': {
                 'foo': 'bar'
@@ -145,7 +155,9 @@ class TaskTests(APITestCase):
 
     def test_update_task_auth(self):
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'unique': 'classifer-2343',
             'data': {
                 'foo': 'bar'
@@ -171,7 +183,9 @@ class TaskTests(APITestCase):
 
     def test_list_tasks(self):
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'data': {
                 'foo': 'bar'
             }
@@ -198,7 +212,9 @@ class TaskTests(APITestCase):
 
     def test_get_task(self):
         task_post_data = {
-            'task_def': self.task_def_name,
+            'task_def': {
+                'name': self.task_def_name
+            },
             'unique': 'classifer-2343',
             'data': {
                 'foo': 'bar'
@@ -218,3 +234,21 @@ class TaskTests(APITestCase):
 
         self.assertEqual(task_response.status_code, 200)
         self.assertEqual(list(task_response.data.keys()), task_keys)
+
+    def test_create_nonexistent_task_def(self):
+        task_post_data = {
+            'task_def': {
+                'name': 'nonexistent-task-def'
+            },
+            'unique': 'classifer-2343',
+            'data': {
+                'foo': 'bar'
+            }
+        }
+
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        task_create_response = client.post('/tasks/', task_post_data, format='json')
+
+        self.assertEqual(task_create_response.status_code, 201)
