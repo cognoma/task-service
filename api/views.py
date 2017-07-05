@@ -111,7 +111,12 @@ class PullQueue(APIView):
         if 'tasks' not in request.query_params:
             raise ParseError('`tasks` query parameter required')
 
-        if 'worker_id' not in request.query_params:
+        if 'worker_id' in request.query_params:
+            try:
+                worker_id = str(request.query_params['worker_id'])
+            except ValueError:
+                raise ParseError('`worker_id` query parameter must be a string')
+        else:
             raise ParseError('`worker_id` query parameter required')
 
         if 'limit' in request.query_params:
@@ -192,3 +197,20 @@ class DequeueTask(APIView):
         task.save()
 
         return Response(status=204)
+
+class CompleteTask(APIView):
+    permission_classes = (TaskServicePermission,)
+
+    def post(self, request, id):
+        try:
+            task = Task.objects.get(id=id)
+        except Task.DoesNotExist:
+            raise NotFound('Task not found')
+
+        task.status = 'completed'
+        task.completed_at = datetime.datetime.utcnow()
+        task.locked_at = None
+        task.worker_id = None
+        task.save()
+
+        return Response(data='Task completed', status=200)
