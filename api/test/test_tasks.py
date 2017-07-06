@@ -57,7 +57,7 @@ class TaskTests(APITestCase):
         self.assertEqual(list(response.data.keys()), task_keys)
         self.assertEqual(response.data['task_def']['name'], self.task_def_name)
 
-        ## test fields defaults
+        # test fields defaults
         self.assertEqual(response.data['status'], 'queued')
         self.assertEqual(response.data['priority'], 3)
         self.assertEqual(response.data['run_at'], test_datetime)

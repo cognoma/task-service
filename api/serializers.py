@@ -73,6 +73,7 @@ class TaskSerializer(serializers.Serializer):
         instance.worker_id = validated_data.get('worker_id', instance.priority)
         instance.priority = validated_data.get('priority', instance.priority)
         instance.started_at = validated_data.get('started_at', instance.started_at)
+        instance.locked_at = validated_data.get('locked_at', instance.locked_at)
         instance.completed_at = completed_at
         instance.failed_at = failed_at
         instance.data = validated_data.get('data', instance.data)

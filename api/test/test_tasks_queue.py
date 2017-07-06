@@ -189,40 +189,6 @@ class TaskQueueTests(APITestCase):
 
         self.assertEqual(task_response.data['status'], 'dequeued')
 
-    def test_pull_and_complete(self):
-        client = APIClient()
-        client.credentials(HTTP_AUTHORIZATION=self.token)
-
-        task_response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
-        self.assertEqual(task_response.status_code, 200)
-        self.assertEqual(len(task_response.data), 1)
-
-        task = task_response.data[0]
-
-        task['completed_at'] = (datetime.utcnow() + timedelta(0,600)).isoformat() + 'Z'
-
-        update_response = client.put('/tasks/' + str(task['id']), task, format='json')
-
-        self.assertEqual(update_response.status_code, 200)
-        self.assertEqual(update_response.data['status'], 'complete')
-
-    def test_pull_and_fail(self):
-        client = APIClient()
-        client.credentials(HTTP_AUTHORIZATION=self.token)
-
-        task_response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
-        self.assertEqual(task_response.status_code, 200)
-        self.assertEqual(len(task_response.data), 1)
-
-        task = task_response.data[0]
-
-        task['failed_at'] = (datetime.utcnow() + timedelta(0,600)).isoformat() + 'Z'
-
-        update_response = client.put('/tasks/' + str(task['id']), task, format='json')
-
-        self.assertEqual(update_response.status_code, 200)
-        self.assertEqual(update_response.data['status'], 'failed')
-
     def pull_and_update(self, client, is_fail):
         task_response = client.get('/tasks/queue?tasks=' + self.task_def_name + '&worker_id=foo')
         self.assertEqual(task_response.status_code, 200)
@@ -230,19 +196,30 @@ class TaskQueueTests(APITestCase):
 
         task = task_response.data[0]
 
-        update_datetime = (datetime.utcnow() + timedelta(0,600)).isoformat() + 'Z'
         if is_fail:
-            task['failed_at'] = update_datetime
-            task['completed_at'] = None
+            update_response = client.post('/tasks/{id}/fail/'.format(id=task['id']), task, format='json')
         else:
-            task['failed_at'] = None
-            task['completed_at'] = update_datetime
-
-        update_response = client.put('/tasks/' + str(task['id']), task, format='json')
+            update_response = client.post('/tasks/{id}/complete/'.format(id=task['id']), task, format='json')
 
         self.assertEqual(update_response.status_code, 200)
-        
+
         return update_response
+
+    def test_pull_and_complete(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        update_response = self.pull_and_update(client, False)
+
+        self.assertEqual(update_response.data['status'], 'complete')
+
+    def test_pull_and_fail(self):
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=self.token)
+
+        update_response = self.pull_and_update(client, True)
+
+        self.assertEqual(update_response.data['status'], 'failed')
 
     def test_pull_retry_fail(self):
         client = APIClient()

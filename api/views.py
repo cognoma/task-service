@@ -164,7 +164,7 @@ class TouchTask(APIView):
         task.locked_at = (datetime.datetime.now() + datetime.timedelta(seconds=timeout)).isoformat() + 'Z'
         task.save()
 
-        return Response(status=204)
+        return Response(data={'message': 'Task touched.'}, status=200)
 
 class ReleaseTask(APIView):
     permission_classes = (TaskServicePermission,)
@@ -180,7 +180,7 @@ class ReleaseTask(APIView):
         task.worker_id = None
         task.save()
 
-        return Response(status=204)
+        return Response(data={'message': 'Task released.'}, status=200)
 
 class DequeueTask(APIView):
     permission_classes = (TaskServicePermission,)
@@ -196,7 +196,7 @@ class DequeueTask(APIView):
         task.worker_id = None
         task.save()
 
-        return Response(status=204)
+        return Response(data={'message': 'Task dequeued.'}, status=200)
 
 class CompleteTask(APIView):
     permission_classes = (TaskServicePermission,)
@@ -206,11 +206,26 @@ class CompleteTask(APIView):
             task = Task.objects.get(id=id)
         except Task.DoesNotExist:
             raise NotFound('Task not found')
-
-        task.status = 'completed'
-        task.completed_at = datetime.datetime.utcnow()
-        task.locked_at = None
-        task.worker_id = None
+        task = TaskSerializer(task, data={
+            'completed_at': datetime.datetime.utcnow()
+        }, partial=True)
+        task.is_valid(raise_exception=True)
         task.save()
 
-        return Response(data='Task completed', status=200)
+        return Response(data=task.data, status=200)
+
+class FailTask(APIView):
+    permission_classes = (TaskServicePermission,)
+
+    def post(self, request, id):
+        try:
+            task = Task.objects.get(id=id)
+        except Task.DoesNotExist:
+            raise NotFound('Task not found')
+        task = TaskSerializer(task, data={
+            'failed_at': datetime.datetime.utcnow()
+        }, partial=True)
+        task.is_valid(raise_exception=True)
+        task.save()
+
+        return Response(data=task.data, status=200)
