@@ -137,7 +137,7 @@ class TaskQueueTests(APITestCase):
         task = task_response.data[0]
 
         touch_response = client.post('/tasks/' + str(task['id']) + '/touch?timeout=300')
-        self.assertEqual(touch_response.status_code, 204)
+        self.assertEqual(touch_response.status_code, 200)
 
         task_response = client.get('/tasks/' + str(task['id']))
         self.assertEqual(task_response.status_code, 200)
@@ -162,7 +162,7 @@ class TaskQueueTests(APITestCase):
         self.assertEqual(task['status'], 'in_progress')
 
         release_response = client.post('/tasks/' + str(task['id']) + '/release')
-        self.assertEqual(release_response.status_code, 204)
+        self.assertEqual(release_response.status_code, 200)
 
         task_response = client.get('/tasks/' + str(task['id']))
         self.assertEqual(task_response.status_code, 200)
@@ -182,7 +182,7 @@ class TaskQueueTests(APITestCase):
         self.assertEqual(task['status'], 'in_progress')
 
         dequeue_response = client.post('/tasks/' + str(task['id']) + '/dequeue')
-        self.assertEqual(dequeue_response.status_code, 204)
+        self.assertEqual(dequeue_response.status_code, 200)
 
         task_response = client.get('/tasks/' + str(task['id']))
         self.assertEqual(task_response.status_code, 200)
