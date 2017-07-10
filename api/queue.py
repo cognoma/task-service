@@ -1,5 +1,4 @@
 from django.db import connection
-
 from api.models import TaskDef, Task
 
 get_task_sql = """
@@ -16,19 +15,9 @@ WITH nextTasks as (
             (NOW() > (locked_at + INTERVAL '1 second' * task_defs.default_timeout))) OR
            (status = 'failed_retrying' AND
             attempts < task_defs.max_attempts))
-    ORDER BY
-        CASE WHEN priority = 'critical'
-             THEN 1
-             WHEN priority = 'high'
-             THEN 2
-             WHEN priority = 'normal'
-             THEN 3
-             WHEN priority = 'low'
-             THEN 4
-        END,
-        run_at
-    LIMIT %s
+    ORDER BY priority, run_at
     FOR UPDATE SKIP LOCKED
+    LIMIT %s
 )
 UPDATE tasks SET
     status = 'in_progress',

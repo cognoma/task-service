@@ -32,6 +32,7 @@ class TaskDefSerializer(serializers.Serializer):
 class TaskSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     task_def = serializers.PrimaryKeyRelatedField(required=True, queryset=TaskDef.objects.all())
+    task_def = TaskDefSerializer()
     status = serializers.CharField(read_only=True)
     worker_id = serializers.CharField(read_only=True, required=False, max_length=255)
     locked_at = serializers.DateTimeField(read_only=True, format='iso-8601')
@@ -48,7 +49,10 @@ class TaskSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         try:
-            return Task.objects.create(**validated_data)
+            # task creation request specifies name of a task-def.
+            # get_or_create guarantees that a task-def of that name will exist before the task is created
+            task_def, created = TaskDef.objects.get_or_create(**validated_data.pop('task_def'))
+            return Task.objects.create(task_def=task_def, **validated_data)
         except IntegrityError:
             raise UniqueTaskConflict()
 
@@ -56,19 +60,20 @@ class TaskSerializer(serializers.Serializer):
         failed_at = validated_data.get('failed_at', None)
         completed_at = validated_data.get('completed_at', None)
         
-        if failed_at == None and completed_at != None:
+        if failed_at is None and completed_at is not None:
             instance.status = 'complete'
-        elif failed_at != None and completed_at == None:
+        elif failed_at is not None and completed_at is None:
             if instance.attempts >= instance.task_def.max_attempts:
                 instance.status = 'failed'
             else:
                 instance.status = 'failed_retrying'
-        elif failed_at != None and completed_at != None:
+        elif failed_at is not None and completed_at is not None:
             raise exceptions.ValidationError('`failed_at` and `completed_at` cannot be both non-null at the same time.')
 
         instance.worker_id = validated_data.get('worker_id', instance.priority)
         instance.priority = validated_data.get('priority', instance.priority)
         instance.started_at = validated_data.get('started_at', instance.started_at)
+        instance.locked_at = validated_data.get('locked_at', instance.locked_at)
         instance.completed_at = completed_at
         instance.failed_at = failed_at
         instance.data = validated_data.get('data', instance.data)

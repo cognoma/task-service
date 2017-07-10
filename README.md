@@ -1,6 +1,6 @@
 # Cognoma task-service
 
-This repository houses the service, accessible by HTTP RESTful API, responsable for manageing backround tasks within the Cognoma application backend.
+This repository houses the service, accessible by HTTP RESTful API, responsible for managing background tasks within the Cognoma application backend.
 
 ## Getting started
 

@@ -56,6 +56,7 @@ WSGI_APPLICATION = 'task_service.wsgi.application'
 
 # development
 STATIC_URL = '/static/'
+APPEND_SLASH = True
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases

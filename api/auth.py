@@ -46,14 +46,14 @@ class TaskServicePermission(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        if not request.user: ## the "service" from above
+        if not request.user: # the "service" from above
             raise exceptions.NotAuthenticated()
 
         return True
 
 class QueuePullPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user: ## the "service" from above
+        if not request.user: # the "service" from above
             raise exceptions.NotAuthenticated()
 
         return True
