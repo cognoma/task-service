@@ -1,3 +1,5 @@
+# THIS REPOSITORY HAS BEEN DEPRECATED. task-service has been combined into the [core-service repository](https://github.com/cognoma/core-service).
+
 # Cognoma task-service
 
 This repository houses the service, accessible by HTTP RESTful API, responsable for manageing backround tasks within the Cognoma application backend.
