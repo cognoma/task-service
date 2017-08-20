@@ -9,3 +9,5 @@ pyasn1==0.1.9
 pycparser==2.16
 PyJWT==1.4.2
 six==1.10.0
+gunicorn==19.6.0
+eventlet==0.20.1
